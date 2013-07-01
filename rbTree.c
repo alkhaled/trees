@@ -26,31 +26,26 @@ When inserting a new node we must perserve the rb properties, we do this with th
 2.Restructure the tree. This is done by updating the pointers of the tree using rotations 
 Rotation example: (This preserves the properties of the BST, every nodes left child is still smaller than it and every right child is larger)
 
-A      left rotate      B  
-/ \    ---------->      / \
-B   C                   x   A
-/ \       right rotate      / \
-x   y     <-----------      y   C
-This is a constant time operation.   
+        A      left rotate      B  
+       / \    ---------->      / \
+      B   C                   x   A
+     / \       right rotate      / \
+    x   y     <-----------      y   C
+  This is a constant time operation.   
 
 The actual insert operation involves inserting a new node exactly like we would in a normal BST. We color this
 node red, which may lead to problems since every red node must have a black parent. To solve this problem we move the 
-violation up the tree via recoloring untill we can fix the problem via restructuring. 
+violation up the tree via recoloring untill we can fix the problem via restructuring. See insert fixup for psuedo code on how to do this with the specific
+cases specified. 
 
 */
 
 void left_rotate (struct tree * tree, struct node * current)   
 {
-  //	printf("left_rotate start\n");
   // current is the node we want to rotate left
-  // new_root is its old right child that will be rotated to currents old position
-  
+  // new_root is its old right child that will be rotated to currents old position 
   struct node *new_root = (struct node*) malloc(sizeof(struct node));
   
-  if ( current->right == tree->leaf){
-    printf("attempting to rotate a leaf... exiting\n");
-    return;
-  }
   
   new_root = current->right;            // new root is final root of the subtree we will rotate
   current->right = new_root->left;      // make the new roots left subtree the old roots right subtree
@@ -62,11 +57,6 @@ void left_rotate (struct tree * tree, struct node * current)
   new_root->parent = current->parent;   // give the new root the old roots parent
   
   
-  if ( current->parent == tree->leaf){
-    printf("handling root\n");      /////////DELETE THIS
-    exit(1);
-  }
-  
   if ( current == current->parent->left)    // if current was a left child
     current->parent->left = new_root;	  // set current's parent's left child to the new root
   
@@ -76,21 +66,15 @@ void left_rotate (struct tree * tree, struct node * current)
   new_root->left = current;
   current->parent = new_root;			  // update the old root's parent to be the new root
   
-  //	printf("left_rotate done\n");
 }
 
-void right_rotate (struct tree * tree, struct node * current)
+void right_rotate (struct tree* tree, struct node* current)
 {
-  //	printf("right_rotate start\n");
+  
   // current is the node we want to rotate left
   // new_root is its old left child that will be rotated to currents old position
   
   struct node *new_root = (struct node*) malloc(sizeof(struct node));
-  
-  if ( current->left == tree->leaf){
-    printf("attempting to rotate a leaf... exiting\n");
-    return;
-  }
   
   new_root = current->left;            // new root is final root of the subtree we will rotate
   current->left = new_root->right;      // make the new roots right subtree the old roots left subtree
@@ -100,14 +84,7 @@ void right_rotate (struct tree * tree, struct node * current)
     current->left->parent = current;
 
   new_root->parent = current->parent;   // give the new root the old roots parent
-  
-  
-  if ( current->parent == tree->leaf){
-    printf("handling root\n");  //////DELETE THIS
-    exit(1);
-  }
-  //end TODO
-  
+    
   if ( current == current->parent->left)    // if current was a left child
     current->parent->left = new_root;	  // set current's parent's left child to the new root
   
@@ -117,11 +94,11 @@ void right_rotate (struct tree * tree, struct node * current)
   new_root->right = current;
   current->parent = new_root;			  // update the old root's parent to be the new root
   
-  //	printf("right_rotate done\n");
 }
 
-void insert_fixup (struct tree * tree, struct node * inserted){
-  //	printf("fixing up after insert\n");
+void insert_fixup (struct tree* tree, struct node* inserted)
+{
+
   struct node * z = inserted;
   struct node * y;
   
@@ -171,33 +148,33 @@ void insert_fixup (struct tree * tree, struct node * inserted){
   tree->root->left->red = false; // color root black
 }
 
-void insert (struct tree * tree, struct node *to_insert)
+void insert (struct tree* tree, struct node* to_insert)
 {
   bool done = false;
   to_insert->left = to_insert->right = tree->leaf; // set the new nodes leaves to the null leaf
   
   tree->root->key = to_insert->key; // set the dummy roots key to the new value so that insert always goes left of the root;
-  struct node * current = tree->root;
+  struct node* current = tree->root;
   while(!done)
     {
-      printf("checking node: %d against to_insert node %d and ::",current->key, to_insert->key);
+      //printf("checking node: %d against to_insert node %d and ::",current->key, to_insert->key);
       if(current->key >= to_insert->key){
-	printf("Going left\n");
+	//printf("Going left\n");
 	if ( current->left != tree->leaf)
 	  current = current->left;
 	else{
-	  printf("current.left is empty... putting new node in\n");
+	  //printf("current.left is empty... putting new node in\n");
 	  done = true;
 	  current->left = to_insert;
 	  to_insert->parent = current;
 	}
       }else{
-	printf("Going right\n");
+	//printf("Going right\n");
 	if(current->right != tree->leaf){
 	  current = current->right;
 	}
 	else{
-	  printf("current.right is empty... putting new node in\n");
+	  //printf("current.right is empty... putting new node in\n");
 	  done = true;
 	  current->right = to_insert;	
 	  to_insert->parent = current;
@@ -211,9 +188,9 @@ void insert (struct tree * tree, struct node *to_insert)
   return;
 } 
 
-struct node * addNode(struct tree * tree, int n)
+struct node* addNode(struct tree* tree, int n)
 {
-  struct node *to_add = (struct node*) malloc(sizeof(struct node));
+  struct node* to_add = (struct node*) malloc(sizeof(struct node));
   
   //	printf("Creating new node: ");
   to_add->key = n;
@@ -221,14 +198,11 @@ struct node * addNode(struct tree * tree, int n)
   to_add->left = tree->leaf;
   to_add->parent = NULL;
   
-  // = {n,NULL,NULL};
-  //	printf("%d\n", to_add->key );
-  //	printf("inserting\n");
   insert(tree, to_add);
   return to_add;
 }
 
-void transplant (struct tree * tree, struct node * to_remove, struct node * replace)
+void transplant (struct tree* tree, struct node* to_remove, struct node* replace)
 {
   //this method takes a single node and replaces another node in the tree with it
   // NOTE THIS METHOD WILL NOT TAKE CARE OF REPLACE'S CHILDREN
@@ -244,70 +218,70 @@ void delete_fixup ( struct tree* tree, struct node* to_fix)
 {
   struct node* sibling;
   while(to_fix != tree->root && !to_fix->red)
-  {
-    if ( to_fix == to_fix->parent->left)
     {
-      sibling = to_fix->parent->right;
-      if(sibling->red)
-      {
-        sibling->red = false;
-        to_fix->parent->red = true;
-        left_rotate(tree,to_fix->parent);
-        sibling = to_fix->parent->right;
-      }
-      if(sibling->left->red == false && sibling->right->red == false)
-      {
-        sibling->red = true;
-        to_fix = to_fix->parent;
-      }
-      else{
-       if (sibling->right->red == false)
-        {
-          sibling->left->red = false;
-          sibling->red = true;
-          right_rotate(tree, sibling);
-          sibling = to_fix->parent->right;
-        }
-        sibling->red = to_fix->parent->red;
-        to_fix->parent->red = false;
-        sibling->right->red = false;
-        left_rotate(tree, to_fix->parent);
-        to_fix = tree->root;
-      }
-    }else
-    {
-     sibling = to_fix->parent->left;
-      if(sibling->red)
-      {
-        sibling->red = false;
-        to_fix->parent->red = true;
-        right_rotate(tree,to_fix->parent);
-        sibling = to_fix->parent->left;
-      }
-      if(sibling->left->red == false && sibling->right->red == false)
-      {
-        sibling->red = true;
-        to_fix = to_fix->parent;
-      }
-      else{
-       if (sibling->left->red == false)
-        {
-          sibling->right->red = false;
-          sibling->red = true;
-          left_rotate(tree, sibling);
-          sibling = to_fix->parent->left;
-        }
-        sibling->red = to_fix->parent->red;
-        to_fix->parent->red = false;
-        sibling->left->red = false;
-        right_rotate(tree, to_fix->parent);
-        to_fix = tree->root;
-      } 
+      if ( to_fix == to_fix->parent->left)
+	{
+	  sibling = to_fix->parent->right;
+	  if(sibling->red)
+	    {
+	      sibling->red = false;
+	      to_fix->parent->red = true;
+	      left_rotate(tree,to_fix->parent);
+	      sibling = to_fix->parent->right;
+	    }
+	  if(sibling->left->red == false && sibling->right->red == false)
+	    {
+	      sibling->red = true;
+	      to_fix = to_fix->parent;
+	    }
+	  else{
+	    if (sibling->right->red == false)
+	      {
+		sibling->left->red = false;
+		sibling->red = true;
+		right_rotate(tree, sibling);
+		sibling = to_fix->parent->right;
+	      }
+	    sibling->red = to_fix->parent->red;
+	    to_fix->parent->red = false;
+	    sibling->right->red = false;
+	    left_rotate(tree, to_fix->parent);
+	    to_fix = tree->root;
+	  }
+	}else
+	{
+	  sibling = to_fix->parent->left;
+	  if(sibling->red)
+	    {
+	      sibling->red = false;
+	      to_fix->parent->red = true;
+	      right_rotate(tree,to_fix->parent);
+	      sibling = to_fix->parent->left;
+	    }
+	  if(sibling->left->red == false && sibling->right->red == false)
+	    {
+	      sibling->red = true;
+	      to_fix = to_fix->parent;
+	    }
+	  else{
+	    if (sibling->left->red == false)
+	      {
+		sibling->right->red = false;
+		sibling->red = true;
+		left_rotate(tree, sibling);
+		sibling = to_fix->parent->left;
+	      }
+	    sibling->red = to_fix->parent->red;
+	    to_fix->parent->red = false;
+	    sibling->left->red = false;
+	    right_rotate(tree, to_fix->parent);
+	    to_fix = tree->root;
+	  } 
+	}
     }
-  }
   to_fix->red = false;
 }
-void delete ( struct tree * tree , struct node * to_delete)
+void delete ( struct tree* tree , struct node* to_delete)
 {
 
   /* we need to keep track of any node that can cuase potential r-b violations
@@ -317,8 +291,8 @@ void delete ( struct tree * tree , struct node * to_delete)
    * color, because of this that position in the tree will not cause violations. However, we may introduce 
    * a violation in x's old position. Note: handling x is guaranteed to be case (1).
    */
-  struct node * replacement;
-  struct node * to_fix;
+  struct node* replacement;
+  struct node* to_fix;
   /*if ( to_delete->left == tree->leaf && to_delete->right == tree->leaf){
     printf("no children exist\n");		
     transplant(tree,to_delete,tree->leaf);
@@ -348,7 +322,7 @@ void delete ( struct tree * tree , struct node * to_delete)
     replacement->right = to_delete->right;
     to_delete->right->parent = to_delete->left->parent = replacement;
 
-  // if replacement is black fixup replacements old position in the tree.
+    // if replacement is black fixup replacements old position in the tree.
     delete_fixup(tree,to_fix);
     free(to_delete);
     
@@ -422,7 +396,7 @@ struct node* predecessor (struct tree* tree, struct node* current){
 }
 
 
-void tree_init(struct tree * tree){
+void tree_init(struct tree* tree){
   
   tree->leaf = (struct node*) malloc(sizeof(struct node));
   tree->leaf->left= tree->leaf->right= tree->leaf->parent = tree->leaf;
@@ -436,10 +410,10 @@ void tree_init(struct tree * tree){
   
   
   
-  printf("done with init\n");
+  //printf("done with init\n");
 }
 
-int height(struct tree * tree, struct node * n)
+int height(struct tree* tree, struct node* n)
 {
   if ( n == tree->leaf)
     return 0;
@@ -451,7 +425,7 @@ int height(struct tree * tree, struct node * n)
     return left+1;
   else return right +1;
 }
-void print_inorder (struct tree * tree ,struct node * current)
+void print_inorder (struct tree* tree ,struct node* current)
 {
   if (current->left != tree->leaf)
     print_inorder(tree, current->left);
@@ -462,7 +436,7 @@ void print_inorder (struct tree * tree ,struct node * current)
     print_inorder(tree, current->right);
   
 }
-bool red_test(struct tree * tree, struct node * n)
+bool red_test(struct tree* tree, struct node* n)
 {
   if ( n == tree->leaf)
     return true;
@@ -477,9 +451,8 @@ bool red_test(struct tree * tree, struct node * n)
   return ((red_test(tree, n->left)) && red_test(tree, n->right));
 }
 
-int black_height(struct tree * tree, struct node * n, bool test)
+int black_height(struct tree* tree, struct node* n, bool test)
 {	
-  
   
   int left;  
   if (n->left == tree->leaf) //covers the case of a black leaf or a red leaf with a black sentinel
@@ -498,7 +471,8 @@ int black_height(struct tree * tree, struct node * n, bool test)
       return right+1;
     else return right;
 }
-bool test (struct tree * tree)
+
+bool test (struct tree* tree)
 {
   
   bool equal_black_height =true;
@@ -508,40 +482,18 @@ bool test (struct tree * tree)
 }
 int main(){
   
-  struct tree * tree = (struct tree*) malloc(sizeof(struct tree));
+  struct tree* tree = (struct tree*) malloc(sizeof(struct tree));
   tree_init(tree);
-  printf("%d\n",tree->leaf->key );
-  
-  addNode(tree,40);         //40
-  addNode(tree,20);    //20      70
-  addNode(tree,30); //10   30  50
-  addNode(tree,10);            //60
-  addNode(tree,70);
-  addNode(tree,50);
-  addNode(tree,60);
-  addNode(tree,61);
-  addNode(tree,15);
-  addNode(tree,9);
-  
-  delete(tree,search(tree,20));
-  print_inorder(tree, tree->root->left);
   /////////////////////
-  /*	int i = 0;
-	while( i >= 0)
-	{
-	printf(" Next Element= ");
-	scanf("%d",&i);
-	addNode(tree, i);
-	}
-	printf("\n");
+  int i = 0;
+  while( i >= 0)
+    {
+      printf(" Next Element= ");
+      scanf("%d",&i);
+      addNode(tree, i);
+    }
+  printf("\n");
 	
-*/
-  
-  
-  print_inorder(tree,tree->root->left);
-    printf("height: %d\n",height(tree,tree->root->left));
-    if (test(tree))
-    printf("good\n");
-    return 0;
+  return 0;
   
 }
